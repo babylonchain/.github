@@ -18,7 +18,7 @@ on:
         type: boolean
 
 jobs:
-  docker_build_and_push:
+  docker_build:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
@@ -42,9 +42,33 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      - name: Push Docker image to Docker Hub
+ 
+      - name: Upload Docker image to workspace
         if: inputs.publish == 'true'
-        run: |
-          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_NAME }}
+          path: /tmp/${{ env.IMAGE_NAME }}.tar
+
+  docker_publish:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Download Docker image from workspace
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.IMAGE_NAME }}
+        path: /tmp/
+
+    - name: Load Docker image
+      run: docker load -i /tmp/${{ env.IMAGE_NAME }}.tar
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Push Docker image
+      run: |
+        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        docker push ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
