@@ -53,6 +53,7 @@ jobs:
   docker_publish:
     runs-on: ubuntu-22.04
     if: inputs.publish == 'true'
+    needs: ["docker_build"]
     steps:
     - name: Download Docker image from workspace
       uses: actions/download-artifact@v4
