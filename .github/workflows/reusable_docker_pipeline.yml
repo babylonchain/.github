@@ -43,6 +43,8 @@ jobs:
         with:
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ env.IMAGE_NAME }}.tar
+          context: ${{ inputs.dockerContext }}
+          file: ${{ inputs.dockerfile }}
  
       - name: Upload Docker image to workspace
         if: inputs.publish == true
@@ -75,7 +77,13 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Push Docker image
+    - name: Push Docker image with SHA
       run: |
         docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+    - name: Push Docker image with Tag
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+        docker push ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
