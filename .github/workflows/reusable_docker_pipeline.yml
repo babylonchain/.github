@@ -56,6 +56,10 @@ jobs:
     if: inputs.publish == true
     needs: ["docker_build"]
     steps:
+    - name: Determine image name
+      id: set_image_name
+      run: echo "IMAGE_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)" >> $GITHUB_ENV
+
     - name: Download Docker image from workspace
       uses: actions/download-artifact@v4
       with:
