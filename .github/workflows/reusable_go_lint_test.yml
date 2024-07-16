@@ -120,7 +120,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          /bin/bash -c "${{ inputs.integration-tests-command }}"
+          /bin/bash -c ${{ inputs.integration-tests-command }}
 
   check-mock-gen:
     runs-on: ubuntu-22.04
