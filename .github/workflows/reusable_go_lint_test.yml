@@ -31,6 +31,10 @@ on:
         description: 'Integration tests require sudo'
         type: boolean
         default: false
+      run-check-mock-gen:
+          description: 'Run check-mock-gen'
+          type: boolean
+          default: false
 
 jobs:
   build:
@@ -118,4 +122,26 @@ jobs:
             sudo make test-e2e
           else
             make test-e2e
+          fi
+
+  check-mock-gen:
+    runs-on: ubuntu-22.04
+    if: ${{ inputs.run-check-mock-gen }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Run make mock-gen
+        run: make mock-gen
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --exit-code; then
+            echo "Uncommitted changes detected. Please run 'make mock-gen' before committing."
+            exit 1
           fi
