@@ -119,7 +119,8 @@ jobs:
           go-version: ${{ inputs.go-version }}
 
       - name: Run Integration Tests
-        run: ${{ inputs.integration-tests-command }}
+        run: |
+          /bin/bash -c "${{ inputs.integration-tests-command }}"
 
   check-mock-gen:
     runs-on: ubuntu-22.04
