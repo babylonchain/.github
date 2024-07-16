@@ -27,10 +27,12 @@ on:
         description: 'Run integration tests'
         type: boolean
         default: false
-      integration-tests-require-sudo:
-        description: 'Integration tests require sudo'
-        type: boolean
-        default: false
+      # allow customizing the test command (e.g sudo make test-e2e)
+      integration-tests-command:
+          description: 'Command to run integration tests'
+          required: false
+          type: string
+          default: 'make test-e2e'
       run-check-mock-gen:
           description: 'Run check-mock-gen'
           type: boolean
@@ -117,12 +119,7 @@ jobs:
           go-version: ${{ inputs.go-version }}
 
       - name: Run Integration Tests
-        run: |
-          if [ "${{ inputs.integration-tests-require-sudo }}" == "true" ]; then
-            sudo make test-e2e
-          else
-            make test-e2e
-          fi
+        run: ${{ inputs.integration-tests-command }}
 
   check-mock-gen:
     runs-on: ubuntu-22.04
