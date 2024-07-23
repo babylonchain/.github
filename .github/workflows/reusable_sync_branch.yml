@@ -1,0 +1,50 @@
+name: Sync branch
+
+on:
+  workflow_call:
+   inputs:
+    base_branch:
+      description: 'The base branch to sync from'
+      required: true
+      default: 'dev'
+      type: string
+    target_branch:
+      description: 'The target branch to sync to'
+      required: true
+      default: 'main'
+      type: string
+    reviewers:
+      description: 'Comma-separated list of reviewers'
+      required: false
+      default: ''
+      type: string
+
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check for existing PR and create if not exists
+        run: |
+          base_branch="${{ github.event.inputs.base_branch }}"
+          target_branch="${{ github.event.inputs.target_branch }}"
+          reviewers="${{ github.event.inputs.reviewers }}"
+          repo="${{ github.repository }}"
+
+          pr_exists=$(gh pr list --base "$target_branch" --head "$base_branch" --repo "$repo" --json number --jq '.[0].number')
+
+          if [ -n "$pr_exists" ]; then
+            echo "A pull request already exists: #$pr_exists"
+          else
+            gh pr create --base "$target_branch" \
+            --head "$base_branch" \
+            --title "Sync from $base_branch to $target_branch" \
+            --body "This PR synchronizes changes from $base_branch to $target_branch." \
+            --repo "$repo" \
+            --reviewer "$reviewers"
+            
+            echo "Pull request created successfully."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
