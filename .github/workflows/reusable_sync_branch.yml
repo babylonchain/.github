@@ -6,12 +6,12 @@ on:
       base_branch:
         description: 'The base branch to sync from'
         required: true
-        default: 'dev'
+        default: 'main'
         type: string
       target_branch:
         description: 'The target branch to sync to'
         required: true
-        default: 'main'
+        default: 'dev'
         type: string
       reviewers:
         description: 'Comma-separated list of reviewers'
