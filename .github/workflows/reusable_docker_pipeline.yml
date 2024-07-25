@@ -147,3 +147,26 @@ jobs:
       run: |
         docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ vars.AWS_ECR_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
         docker push ${{ vars.AWS_ECR_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+
+    - name: Configure HK AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_HK_ECR_REGION }}
+
+    - name: Login to Amazon HK ECR Private
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Push HK Docker image with SHA
+      run: |
+        aws ecr create-repository --region ${{ vars.AWS_HK_ECR_REGION }} --repository-name ${{ env.IMAGE_NAME }} || true
+        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ vars.AWS_HK_ECR_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        docker push ${{ vars.AWS_HK_ECR_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+    - name: Push HK Docker image with Tag
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ vars.AWS_HK_ECR_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+        docker push ${{ vars.AWS_HK_ECR_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
