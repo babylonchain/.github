@@ -65,7 +65,7 @@ jobs:
             gh pr create --base "$target_branch" \
             --head "$base_branch" \
             --title "Sync from $base_branch to $target_branch" \
-            --body "This PR synchronizes changes from $base_branch to $target_branch.\n\nChanges:\n$change_log" \
+            --body "$(printf "This PR synchronizes changes from $base_branch to $target_branch.\n\nChanges:\n%s" "$change_log")" \
             --repo "$repo" \
             --reviewer "$reviewers"
             
