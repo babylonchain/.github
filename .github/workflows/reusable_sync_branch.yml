@@ -54,8 +54,6 @@ jobs:
           target_branch="${{ inputs.target_branch }}"
           reviewers="${{ inputs.reviewers }}"
           repo="${{ github.repository }}"
-          # Generate the log of changes
-          change_log=$(git log origin/$base_branch --not origin/$target_branch --oneline)
 
           pr_exists=$(gh pr list --base "$target_branch" --head "$base_branch" --repo "$repo" --json number --jq '.[0].number')
 
@@ -65,7 +63,7 @@ jobs:
             gh pr create --base "$target_branch" \
             --head "$base_branch" \
             --title "Sync from $base_branch to $target_branch" \
-            --body "$(printf "This PR synchronizes changes from $base_branch to $target_branch.\n\nChanges:\n%s" "$change_log")" \
+            --body "This PR synchronizes changes from $base_branch to $target_branch." \
             --repo "$repo" \
             --reviewer "$reviewers"
             
